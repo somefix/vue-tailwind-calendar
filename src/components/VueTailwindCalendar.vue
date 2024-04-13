@@ -1,4 +1,51 @@
 <script setup lang="ts">
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru'
+// import localeData from 'dayjs/plugin/localeData'
+import weekday from 'dayjs/plugin/weekday'
+// import updateLocale from 'dayjs/plugin/updateLocale'
+
+const VISIBLE_DATES_COUNT = 42;
+
+// dayjs.extend(localeData)
+dayjs.extend(weekday)
+// dayjs.extend(updateLocale)
+dayjs.locale('ru')
+// dayjs.updateLocale('ru', {
+//   name: 'ru',
+//   weekStart: 1,
+// });
+
+const date = dayjs().add(1, 'month')
+
+/** ====================== */
+const firstDateOfMonth = date.date(1)
+const weekDayNumberOfFirstDate = firstDateOfMonth.weekday()
+const previousDatesOfMonth = []
+console.log(firstDateOfMonth.weekday(0))
+
+for (let i = 0; i < weekDayNumberOfFirstDate; i++) {
+  previousDatesOfMonth.push(firstDateOfMonth.weekday(i))
+}
+console.log(previousDatesOfMonth)
+/** ====================== */
+const datesOfMonth = Array.from(
+  { length: date.daysInMonth() },
+  (v, idx) => date.date(idx + 1),
+)
+console.log(datesOfMonth)
+/** ====================== */
+const nextMonthOfMonth = date.add(1, 'month')
+const nextDatesOfMonth = []
+
+for (let i = 0; i < VISIBLE_DATES_COUNT - weekDayNumberOfFirstDate - date.daysInMonth(); i++ ) {
+  nextDatesOfMonth.push(nextMonthOfMonth.date(i + 1))
+}
+console.log(nextDatesOfMonth)
+
+
+
+
 interface IDay {
 	date: string;
 	isToday?: boolean;
@@ -49,6 +96,9 @@ const days: IDay[] = [
 	{ date: '2022-02-05' },
 	{ date: '2022-02-06' },
 ]
+// const date = "2024-03-01"
+// console.log(dayjs().weekday());
+// console.log(dayjs().localeData());
 </script>
 
 <template>
