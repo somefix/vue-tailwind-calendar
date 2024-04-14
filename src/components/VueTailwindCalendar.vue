@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import dayjs from 'dayjs';
+import dayjs, {Dayjs} from 'dayjs';
 import 'dayjs/locale/ru'
 // import localeData from 'dayjs/plugin/localeData'
 import weekday from 'dayjs/plugin/weekday'
+import {reactive, ref, toRefs, unref} from "vue";
+import VtcCalendar from "@/components/VtcCalendar.vue";
 // import updateLocale from 'dayjs/plugin/updateLocale'
 
 const VISIBLE_DATES_COUNT = 42;
@@ -16,34 +18,20 @@ dayjs.locale('ru')
 //   weekStart: 1,
 // });
 
-const date = dayjs().add(1, 'month')
+const calendar =  reactive({
+	selectedDate: dayjs().add(1, 'month').date(1),
+	displayedMonth: dayjs()
+} );
 
-/** ====================== */
-const firstDateOfMonth = date.date(1)
-const weekDayNumberOfFirstDate = firstDateOfMonth.weekday()
-const previousDatesOfMonth = []
-console.log(firstDateOfMonth.weekday(0))
-
-for (let i = 0; i < weekDayNumberOfFirstDate; i++) {
-  previousDatesOfMonth.push(firstDateOfMonth.weekday(i))
+function next(calendar) {
+	calendar.displayedMonth = calendar.displayedMonth.add(1, 'month')
+	// calendar.selectedDate = calendar.displayedMonth.date(1)
 }
-console.log(previousDatesOfMonth)
-/** ====================== */
-const datesOfMonth = Array.from(
-  { length: date.daysInMonth() },
-  (v, idx) => date.date(idx + 1),
-)
-console.log(datesOfMonth)
-/** ====================== */
-const nextMonthOfMonth = date.add(1, 'month')
-const nextDatesOfMonth = []
 
-for (let i = 0; i < VISIBLE_DATES_COUNT - weekDayNumberOfFirstDate - date.daysInMonth(); i++ ) {
-  nextDatesOfMonth.push(nextMonthOfMonth.date(i + 1))
+function previous(calendar) {
+	calendar.displayedMonth = calendar.displayedMonth.subtract(1, 'month')
+	// calendar.selectedDate = calendar.displayedMonth.date(1)
 }
-console.log(nextDatesOfMonth)
-
-
 
 
 interface IDay {
@@ -104,14 +92,14 @@ const days: IDay[] = [
 <template>
 	<div class="hidden w-1/2 max-w-md flex-none border-l border-gray-100 px-8 py-10 md:block">
 		<div class="flex items-center text-center text-gray-900">
-			<button type="button" class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500">
+			<button @click.prevent="previous(calendar)" type="button" class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500">
 				<span class="sr-only">Previous month</span>
 				<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 					<path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
 				</svg>
 			</button>
-			<div class="flex-auto text-sm font-semibold">January 2022</div>
-			<button type="button" class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500">
+			<div class="flex-auto text-sm font-semibold">{{ calendar.displayedMonth.format('MMMM YYYY') }}</div>
+			<button @click.prevent="next(calendar)" type="button" class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500">
 				<span class="sr-only">Next month</span>
 				<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 					<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
@@ -127,11 +115,12 @@ const days: IDay[] = [
 			<div>S</div>
 			<div>S</div>
 		</div>
-		<div class="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200">
-			<button v-for="(day, dayIdx) in days" :key="day.date" type="button" :class="['py-1.5 hover:bg-gray-100 focus:z-10', day.isCurrentMonth ? 'bg-white' : 'bg-gray-50', (day.isSelected || day.isToday) && 'font-semibold', day.isSelected && 'text-white', !day.isSelected && day.isCurrentMonth && !day.isToday && 'text-gray-900', !day.isSelected && !day.isCurrentMonth && !day.isToday && 'text-gray-400', day.isToday && !day.isSelected && 'text-indigo-600', dayIdx === 0 && 'rounded-tl-lg', dayIdx === 6 && 'rounded-tr-lg', dayIdx === days.length - 7 && 'rounded-bl-lg', dayIdx === days.length - 1 && 'rounded-br-lg']">
-				<time :datetime="day.date" :class="['mx-auto flex h-7 w-7 items-center justify-center rounded-full', day.isSelected && day.isToday && 'bg-indigo-600', day.isSelected && !day.isToday && 'bg-gray-900']">{{ day.date.split('-').pop().replace(/^0/, '') }}</time>
-			</button>
-		</div>
+		<vtc-calendar :displayed-month="calendar.displayedMonth" :selected-date="calendar.selectedDate" />
+<!--		<div class="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200">-->
+<!--			<button v-for="(day, dayIdx) in days" :key="day.date" type="button" :class="['py-1.5 hover:bg-gray-100 focus:z-10', day.isCurrentMonth ? 'bg-white' : 'bg-gray-50', (day.isSelected || day.isToday) && 'font-semibold', day.isSelected && 'text-white', !day.isSelected && day.isCurrentMonth && !day.isToday && 'text-gray-900', !day.isSelected && !day.isCurrentMonth && !day.isToday && 'text-gray-400', day.isToday && !day.isSelected && 'text-indigo-600', dayIdx === 0 && 'rounded-tl-lg', dayIdx === 6 && 'rounded-tr-lg', dayIdx === days.length - 7 && 'rounded-bl-lg', dayIdx === days.length - 1 && 'rounded-br-lg']">-->
+<!--				<time :datetime="day.date" :class="['mx-auto flex h-7 w-7 items-center justify-center rounded-full', day.isSelected && day.isToday && 'bg-indigo-600', day.isSelected && !day.isToday && 'bg-gray-900']">{{ day.date.split('-').pop().replace(/^0/, '') }}</time>-->
+<!--			</button>-->
+<!--		</div>-->
 	</div>
 </template>
 

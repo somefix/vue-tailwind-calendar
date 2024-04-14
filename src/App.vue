@@ -2,6 +2,10 @@
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
 import VueTailwindCalendar from './components/VueTailwindCalendar.vue'
+// import dayjs, {Dayjs} from 'dayjs';
+// import {ref} from "vue";
+
+// const selectedDate = ref(dayjs());
 </script>
 
 <template>
