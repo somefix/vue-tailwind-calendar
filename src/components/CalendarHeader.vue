@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{
+import { computed } from 'vue'
+
+interface Props {
   hidePrev?: boolean
   hideNext?: boolean
   month?: string
@@ -8,7 +10,17 @@ const props = defineProps<{
   year?: string
   hideYear?: boolean
   disableYear?: boolean
-}>()
+  mode?: ECalendarHeaderMode
+}
+
+enum ECalendarHeaderMode {
+  CENTER = 'center',
+  RIGHT = 'right',
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  mode: ECalendarHeaderMode.CENTER,
+})
 
 const emit = defineEmits<{
   (e: 'click:prev'): void
@@ -16,14 +28,17 @@ const emit = defineEmits<{
   (e: 'click:month'): void
   (e: 'click:year'): void
 }>()
+
+const isTitleOnCenter = computed(() => props.mode === ECalendarHeaderMode.CENTER)
 </script>
 
 <template>
-  <div class="flex items-center text-center text-gray-900">
+  <div class="flex items-center text-gray-900" :class="[!isTitleOnCenter && 'text-center']">
     <button
       @click.prevent="emit('click:prev')"
       type="button"
-      class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
+      class="-my-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
+      :class="[!isTitleOnCenter && 'mr-2']"
     >
       <span class="sr-only">Previous month</span>
       <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -35,7 +50,10 @@ const emit = defineEmits<{
       </svg>
     </button>
 
-    <div class="flex text-sm font-semibold gap-1 flex-1 grow justify-center">
+    <div
+      class="flex text-sm font-semibold gap-1 flex-1 grow"
+      :class="[isTitleOnCenter ? 'justify-center' : 'order-first']"
+    >
       <button>{{ props.month }}</button>
       <button>{{ props.year }}</button>
     </div>
@@ -43,7 +61,7 @@ const emit = defineEmits<{
     <button
       @click.prevent="emit('click:next')"
       type="button"
-      class="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
+      class="-my-1.5 -mr-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
     >
       <span class="sr-only">Next month</span>
       <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
